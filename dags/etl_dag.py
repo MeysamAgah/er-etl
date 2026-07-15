@@ -43,20 +43,24 @@ def transform(ti):
 
     df = clean_dataframe(df)
 
+    # ti.xcom_push(
+    #     key="clean_df",
+    #     value=df.to_json(date_format="iso"),
+    # )
     ti.xcom_push(
         key="clean_df",
-        value=df.to_json(date_format="iso"),
+        value=df.to_dict(orient="records"),
     )
 
 
 def load(ti):
 
-    df_json = ti.xcom_pull(
+    records = ti.xcom_pull(
         task_ids="transform",
         key="clean_df",
     )
 
-    df = pd.read_json(df_json)
+    df = pd.DataFrame(records)
 
     load_dataframe(
         df=df,
