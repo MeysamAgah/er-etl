@@ -43,24 +43,27 @@ def transform(ti):
 
     df = clean_dataframe(df)
 
-    # ti.xcom_push(
-    #     key="clean_df",
-    #     value=df.to_json(date_format="iso"),
-    # )
+    output_path = "/opt/airflow/data/processed/clean_data.parquet"
+
+    df.to_parquet(
+        output_path,
+        index=False,
+    )
+
     ti.xcom_push(
-        key="clean_df",
-        value=df.to_dict(orient="records"),
+        key="clean_path",
+        value=output_path,
     )
 
 
 def load(ti):
 
-    records = ti.xcom_pull(
+    path = ti.xcom_pull(
         task_ids="transform",
-        key="clean_df",
+        key="clean_path",
     )
 
-    df = pd.DataFrame(records)
+    df = pd.read_parquet(path)
 
     load_dataframe(
         df=df,
