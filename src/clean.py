@@ -77,11 +77,6 @@ def clean_dataframe(df):
         format="%Y/%m/%d"
     )
 
-    # Jalali date
-    def to_jalali(value):
-        y, m, d = map(int, value.split("/"))
-        return jdatetime.date(y, m, d)
-
-    df["jalali_date"] = df["jalali_date"].apply(to_jalali)
+    df["jalali_date"] = df["jalali_date"].astype(str)
 
     return df
