@@ -1,0 +1,33 @@
+version: "3"
+
+services:
+
+  airflow:
+
+    build:
+      context: ..
+      dockerfile: airflow/Dockerfile
+
+    container_name: tgju-airflow
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+
+      - ../dags:/opt/airflow/dags
+
+      - ../src:/opt/airflow/src
+
+      - ../configs:/opt/airflow/configs
+
+      - ../data:/opt/airflow/data
+
+      - ../logs:/opt/airflow/logs
+
+      - ../plugins:/opt/airflow/plugins
+
+    environment:
+      PYTHONPATH: /opt/airflow
+
+    command: airflow standalone
