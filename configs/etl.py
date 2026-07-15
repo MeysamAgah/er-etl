@@ -11,14 +11,15 @@ ER_TYPE = "price_dollar_rl"
 TABLE_NAME = "market_data"
 
 COLUMNS = [
-    "jalali_date",
-    "gregorian_date",
     "open",
     "high",
     "low",
     "close",
     "change",
     "change_percent",
+    "gregorian_date",
+    "jalali_date",
 ]
+
 
 API_LENGTH = 100
