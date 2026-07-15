@@ -18,6 +18,27 @@ def dict_to_dataframe(parsed_data):
     return pd.DataFrame(parsed_data["rows"])
 
 
+def clean_numeric_column(series, dtype="int32"):
+    """
+    Clean a numeric column by:
+    - removing commas
+    - converting '-' to missing values
+    - coercing invalid values to NaN
+    - filling missing values with 0
+    """
+
+    series = (
+        series.astype(str)
+        .str.replace(",", "", regex=False)
+        .replace("-", None)
+    )
+
+    return (
+        pd.to_numeric(series, errors="coerce")
+        .fillna(0)
+        .astype(dtype)
+    )
+
 def clean_dataframe(df):
     """
     Clean TGJU market data.
@@ -34,31 +55,22 @@ def clean_dataframe(df):
 
     df = df.copy()
 
-    # Integer columns containing commas
-    int_columns = ["open", "high", "low", "close"]
+    int_columns = [
+        "open",
+        "high",
+        "low",
+        "close",
+        "change",
+    ]
 
     for col in int_columns:
-        df[col] = (
-            df[col]
-            .str.replace(",", "", regex=False)
-            .astype("int32")
-        )
-
-    # Change column
-    df["change"] = (
-        df["change"]
-        .replace("-", "0")
-        .astype("int32")
-    )
+        df[col] = clean_numeric_column(df[col], "int32")
 
     # Percent column
-    df["change_percent"] = (
-        df["change_percent"]
-        .replace("-", "0")
-        .str.replace("%", "", regex=False)
-        .astype(float)
+    df["change_percent"] = clean_numeric_column(
+        df["change_percent"].str.replace("%", "", regex=False),
+        "float64",
     )
-
     # Gregorian date
     df["gregorian_date"] = pd.to_datetime(
         df["gregorian_date"],
