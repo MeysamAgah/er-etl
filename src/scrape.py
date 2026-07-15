@@ -102,3 +102,18 @@ def parse_er_data(response, columns, strip_html=True):
         "recordsFiltered": int(response.get("recordsFiltered", 0)),
         "rows": rows,
     }
+
+def fetch_market_data(er_type, columns, **kwargs):
+    """
+    API -> Parsed dictionary
+    """
+
+    response = get_er_data(
+        er_type=er_type,
+        **kwargs
+    )
+
+    return parse_er_data(
+        response,
+        columns=columns,
+    )
