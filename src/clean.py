@@ -1,32 +1,10 @@
 import pandas as pd
-import jdatetime
 
-
-def dict_to_dataframe(parsed_data):
+def _clean_numeric_column(series: pd.Series, dtype: str = "int32") -> pd.Series:
     """
-    Convert parsed TGJU data into a pandas DataFrame.
-
-    Parameters
-    ----------
-    parsed_data : dict
-        Output of parse_er_data().
-
-    Returns
-    -------
-    pandas.DataFrame
+    Helper function to clean numeric strings.
+    Prefixed with an underscore so Hamilton ignores it as a DAG node.
     """
-    return pd.DataFrame(parsed_data["rows"])
-
-
-def clean_numeric_column(series, dtype="int32"):
-    """
-    Clean a numeric column by:
-    - removing commas
-    - converting '-' to missing values
-    - coercing invalid values to NaN
-    - filling missing values with 0
-    """
-
     series = (
         series.astype(str)
         .str.replace(",", "", regex=False)
@@ -39,44 +17,35 @@ def clean_numeric_column(series, dtype="int32"):
         .astype(dtype)
     )
 
-def clean_dataframe(df):
-    """
-    Clean TGJU market data.
 
-    Operations
-    ----------
-    - Remove commas from price columns
-    - Convert prices to int32
-    - Convert change to int32
-    - Convert change_percent to float
-    - Convert gregorian_date to datetime64
-    - Convert jalali_date to jdatetime.date
-    """
+def clean_open(raw_open: pd.Series) -> pd.Series:
+    return _clean_numeric_column(raw_open, "int32")
 
-    df = df.copy()
 
-    int_columns = [
-        "open",
-        "high",
-        "low",
-        "close",
-        "change",
-    ]
+def clean_high(raw_high: pd.Series) -> pd.Series:
+    return _clean_numeric_column(raw_high, "int32")
 
-    for col in int_columns:
-        df[col] = clean_numeric_column(df[col], "int32")
 
-    # Percent column
-    df["change_percent"] = clean_numeric_column(
-        df["change_percent"].str.replace("%", "", regex=False),
-        "float64",
-    )
-    # Gregorian date
-    df["gregorian_date"] = pd.to_datetime(
-        df["gregorian_date"],
-        format="%Y/%m/%d"
-    )
+def clean_low(raw_low: pd.Series) -> pd.Series:
+    return _clean_numeric_column(raw_low, "int32")
 
-    df["jalali_date"] = df["jalali_date"].astype(str)
 
-    return df
+def clean_close(raw_close: pd.Series) -> pd.Series:
+    return _clean_numeric_column(raw_close, "int32")
+
+
+def clean_change(raw_change: pd.Series) -> pd.Series:
+    return _clean_numeric_column(raw_change, "int32")
+
+
+def clean_change_percent(raw_change_percent: pd.Series) -> pd.Series:
+    series = raw_change_percent.astype(str).str.replace("%", "", regex=False)
+    return _clean_numeric_column(series, "float64")
+
+
+def clean_gregorian_date(raw_gregorian_date: pd.Series) -> pd.Series:
+    return pd.to_datetime(raw_gregorian_date, format="%Y/%m/%d")
+
+
+def clean_jalali_date(raw_jalali_date: pd.Series) -> pd.Series:
+    return raw_jalali_date.astype(str)
