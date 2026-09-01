@@ -49,7 +49,7 @@ def transform(ti):
 
     tracker = hamilton_adapters.HamiltonTracker(
         project_id=1,
-        username="meysam.agah",       # same email you signed in with
+        username="admin@example.com",       # same email you signed in with
         dag_name="my_version_of_the_dag",
         tags={"environment": "dev"},
         hamilton_api_url=os.environ.get("HAMILTON_API_URL", "http://localhost:8241"),
