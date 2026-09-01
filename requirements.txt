@@ -8,6 +8,7 @@ jdatetime==6.0.1
 mypy_extensions==1.1.0
 numpy==2.5.1
 pandas==3.0.3
+pyarrow==25.0.1
 python-dateutil==2.9.0.post0
 requests==2.34.2
 six==1.17.0
