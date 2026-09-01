@@ -27,10 +27,6 @@ services:
 
       - ../plugins:/opt/airflow/plugins
 
-    # Allow Docker container to talk to localhost (Hamilton UI) on host machine
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
     environment:
       PYTHONPATH: /opt/airflow
       # Tell the Hamilton SDK where the UI API is located
