@@ -35,5 +35,6 @@ services:
       PYTHONPATH: /opt/airflow
       # Tell the Hamilton SDK where the UI API is located
       HAMILTON_API_URL: http://host.docker.internal:8241
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/data/airflow.db
 
     command: airflow standalone
