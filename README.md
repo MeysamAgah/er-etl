@@ -1,24 +1,24 @@
 # TGJU Market ETL Pipeline using Apache Airflow
 ## Overview
 
-This project demonstrates a complete ETL pipeline using **Apache Airflow**.
+This project demonstrates a complete ETL pipeline using **Apache Airflow** for orchestration and **Apache Hamilton** for data transformation mapping.
 
-The pipeline extracts historical exchange-rate data from the TGJU API, performs data cleaning using Pandas, and loads the cleaned data into a SQLite database.
+The pipeline extracts historical exchange-rate data from the TGJU API, performs modular data transformation using Hamilton micro-functions, and loads the cleaned data into a SQLite database.
 
-The repository is intentionally organized so that Airflow is responsible only for orchestration while the business logic remains reusable inside the src package.
+The repository is intentionally organized so that Airflow is responsible only for task scheduling while the business logic and DataFrame operations are contained cleanly within Hamilton DAGs in the `src` package.
 
 ## Architecture
 ```
 TGJU API
     │
     ▼
-Extract Task
+Extract Task (Airflow)
     │
     ▼
-Transform Task
+Transform Task (Airflow + Hamilton Driver)
     │
     ▼
-Load Task
+Load Task (Airflow)
     │
     ▼
 SQLite Database
@@ -43,6 +43,7 @@ data/
 ## Technologies
 * Python
 * Apache Airflow
+* Apache Hamilton
 * Pandas
 * Requests
 * SQLite
@@ -56,11 +57,11 @@ data/
 * Pushes parsed data to Airflow
 
 ### Transform
+* Utilizes **Apache Hamilton** to define transformations as a directed acyclic graph (DAG) of Python functions.
 * Converts parsed data to Pandas DataFrame
-* Removes commas
-* Converts numeric columns
-* Converts Gregorian dates
-* Converts Jalali dates
+* Removes commas and handles percent symbols
+* Casts numeric columns independently
+* Casts Gregorian and Jalali dates
 
 ### Load
 * Loads cleaned DataFrame into SQLite
