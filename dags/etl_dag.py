@@ -1,9 +1,11 @@
+import os
 from datetime import datetime
-
 import pandas as pd
-
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+
+# Import Hamilton driver
+from hamilton import driver
 
 from configs.etl import (
     DATABASE_PATH,
@@ -14,12 +16,11 @@ from configs.etl import (
 )
 
 from src.scrape import fetch_market_data
-from src.clean import dict_to_dataframe, clean_dataframe
 from src.load import load_dataframe
+import src.clean as clean_module
 
 
 def extract(ti):
-
     parsed = fetch_market_data(
         er_type=ER_TYPE,
         columns=COLUMNS,
@@ -33,18 +34,34 @@ def extract(ti):
 
 
 def transform(ti):
-
     parsed = ti.xcom_pull(
         task_ids="extract",
         key="parsed",
     )
 
-    df = dict_to_dataframe(parsed)
+    # 1. Convert Dictionary directly to a DataFrame
+    raw_df = pd.DataFrame(parsed["rows"])
 
-    df = clean_dataframe(df)
+    # 2. Add prefix to inputs to match the expected parameter names in Hamilton 
+    # (e.g. column 'open' becomes 'raw_open' so it doesn't conflict with target column 'open')
+    raw_df = raw_df.add_prefix("raw_")
 
+    # 3. Setup Hamilton Driver
+    dr = driver.Driver({}, clean_module)
+
+    # 4. Define expected outputs & Execute Hamilton Graph
+    output_columns = [
+        "open", "high", "low", "close", "change",
+        "change_percent", "gregorian_date", "jalali_date"
+    ]
+    inputs = raw_df.to_dict(orient="series")
+    df = dr.execute(output_columns, inputs=inputs)
+
+    # 5. Output Data
     output_path = "/opt/airflow/data/processed/clean_data.parquet"
-
+    
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
     df.to_parquet(
         output_path,
         index=False,
@@ -57,7 +74,6 @@ def transform(ti):
 
 
 def load(ti):
-
     path = ti.xcom_pull(
         task_ids="transform",
         key="clean_path",
@@ -77,7 +93,7 @@ with DAG(
     start_date=datetime(2025, 1, 1),
     schedule="@daily",
     catchup=False,
-    tags=["etl", "sqlite"],
+    tags=["etl", "sqlite", "hamilton"],
 ) as dag:
 
     extract_task = PythonOperator(
