@@ -6,6 +6,7 @@ from airflow.operators.python import PythonOperator
 
 # Import Hamilton driver
 from hamilton import driver
+from hamilton import lifecycle
 
 from configs.etl import (
     DATABASE_PATH,
@@ -48,6 +49,7 @@ def transform(ti):
 
     # 3. Setup Hamilton Driver
     dr = driver.Driver({}, clean_module)
+    dr.display_all_functions()
 
     # 4. Define expected outputs & Execute Hamilton Graph
     output_columns = [
