@@ -6,7 +6,7 @@ from airflow.operators.python import PythonOperator
 
 # Import Hamilton driver
 from hamilton import driver
-from hamilton import lifecycle
+from hamilton_sdk import adapters as hamilton_adapters
 
 from configs.etl import (
     DATABASE_PATH,
@@ -47,9 +47,21 @@ def transform(ti):
     # (e.g. column 'open' becomes 'raw_open' so it doesn't conflict with target column 'open')
     raw_df = raw_df.add_prefix("raw_")
 
+    tracker = hamilton_adapters.HamiltonTracker(
+        project_id=1,
+        username="meysam.agah",       # same email you signed in with
+        dag_name="my_version_of_the_dag",
+        tags={"environment": "dev"},
+        hamilton_api_url=os.environ.get("HAMILTON_API_URL", "http://localhost:8241"),
+    )
+
     # 3. Setup Hamilton Driver
-    dr = driver.Driver({}, clean_module)
-    dr.display_all_functions()
+    dr = (
+        driver.Builder()
+        .with_modules(clean_module)
+        .with_adapters(tracker)
+        .build()
+    )
 
     # 4. Define expected outputs & Execute Hamilton Graph
     output_columns = [
