@@ -69,7 +69,8 @@ def transform(ti):
         "change_percent", "gregorian_date", "jalali_date"
     ]
     inputs = raw_df.to_dict(orient="series")
-    df = dr.execute(output_columns, inputs=inputs)
+    results = dr.execute(output_columns, inputs=inputs)
+    df = pd.DataFrame(results)
 
     # 5. Output Data
     output_path = "/opt/airflow/data/processed/clean_data.parquet"
