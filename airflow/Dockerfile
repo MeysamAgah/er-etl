@@ -3,7 +3,7 @@ FROM apache/airflow:latest
 USER root
 
 RUN apt-get update && \
-    apt-get install -y git && \
+    apt-get install -y git sqlite3 && \
     apt-get clean
 
 USER airflow
